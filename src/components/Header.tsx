@@ -4,7 +4,8 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import styled from 'styled-components'
-import ButtonConnectWallect from './common/ButtonConnectWallet'
+// import ButtonConnectWallect from './common/ButtonConnectWallet'
+import Connectors from './Connectors'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
 export default function Header() {
   const navigate = useNavigate()
@@ -26,7 +27,8 @@ export default function Header() {
       </div>
       <div className="right">
         {/* <input type="text" className="search" /> */}
-        <ButtonConnectWallect />
+        {/* <ButtonConnectWallect /> */}
+        <Connectors />
       </div>
     </HeaderWrapper>
   )
