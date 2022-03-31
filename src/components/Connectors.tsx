@@ -1,7 +1,7 @@
 /*
  * @Author: HuangBoWen
  * @Date: 2022-03-24 22:45:06
- * @LastEditTime: 2022-03-27 21:05:12
+ * @LastEditTime: 2022-03-30 22:53:59
  * @LastEditors: HuangBoWen
  * @Description:
  */
@@ -45,12 +45,11 @@ let contract: any
 export async function connectWallet() {
   if (!instance) {
     instance = await web3ModelInstance.connect()
-    // https://docs.ethers.io/v5/api/providers/
     provider = new ethers.providers.Web3Provider(instance)
-    // https://docs.ethers.io/v5/api/signer/
     signer = provider.getSigner()
     contract = new ethers.Contract(
-      '0x720850d3e49a96d51168680f31ff35108f67ef69',
+      // '0xf02dec16c21cc25cd033e9cf066c5ffcdab37beb',
+      '0x6305348eed237ac2a24668e085c388e8794ece20',
       syntheticNft.abi,
       provider,
     )
@@ -93,6 +92,7 @@ export default function Connectors() {
         try {
           const { provider, signer, web3Instance } = await connectWallet()
           const address = await signer.getAddress()
+          console.log(address,'address')
           // const ens = await provider.lookupAddress(address)
           setAddress(address)
           web3Instance.on('accountsChanged', async (accounts: any) => {

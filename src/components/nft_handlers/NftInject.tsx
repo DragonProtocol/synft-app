@@ -102,9 +102,9 @@ const NftInject: React.FC<RefProps> = ({
       return true
     }
   }
-  useEffect(() => {
-    if (token.volume) validateVolume()
-  }, [token.volume])
+  // useEffect(() => {
+  //   if (token.volume) validateVolume()
+  // }, [token.volume])
   const handleInject = () => {
     if (!onInject) return
     // 验证是否输入金额或选择其它nft
@@ -117,7 +117,7 @@ const NftInject: React.FC<RefProps> = ({
   }
   const handleCopyWithInject = () => {
     if (!onCopyWithInject) return
-    if (!validateVolume()) return
+    // if (!validateVolume()) return
     onCopyWithInject({ injectMode, injectType, token, nft })
   }
   // 获取nft列表
@@ -134,13 +134,13 @@ const NftInject: React.FC<RefProps> = ({
   //   })()
   // }, [nftOptions])
   // 获取当前账户余额
-  useEffect(() => {
-    if (!wallet.publicKey) return
-    ;(async (publicKey) => {
-      const _balance = await connection.getBalance(publicKey)
-      setBalance(_balance)
-    })(wallet.publicKey)
-  }, [wallet])
+  // useEffect(() => {
+  //   if (!wallet.publicKey) return
+  //   ;(async (publicKey) => {
+  //     const _balance = await connection.getBalance(publicKey)
+  //     setBalance(_balance)
+  //   })(wallet.publicKey)
+  // }, [wallet])
 
   return (
     <NftInjectWrapper>
@@ -153,7 +153,7 @@ const NftInject: React.FC<RefProps> = ({
               className={`token-value ${disabledToken ? 'disabled' : ''}`}
               placeholder="0.00"
               value={token.volume}
-              onChange={(e) => setToken({ ...token, volume: e.target.value })}
+              onChange={(e) => setToken({ ...token, volume: Number(e.target.value) < 0.01 ? String(0.01) : e.target.value})}
             />
           </div>
         </div>
@@ -175,7 +175,7 @@ const NftInject: React.FC<RefProps> = ({
           </div>
         </div>
       )}
-      <div className="form-item">
+      {/* <div className="form-item">
         <div className="form-label">Select Mode</div>
         <div className="form-value mode-selector">
           {INJECT_MODES.map((item) => (
@@ -189,7 +189,7 @@ const NftInject: React.FC<RefProps> = ({
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
       {checkTip.visible && (
         <Alert severity="warning">
           <AlertTitle>Warning</AlertTitle>

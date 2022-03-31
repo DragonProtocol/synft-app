@@ -1,24 +1,29 @@
-import React from 'react'
+/*
+ * @Author: HuangBoWen
+ * @Date: 2022-03-29 21:17:33
+ * @LastEditors: HuangBoWen
+ * @LastEditTime: 2022-03-29 21:33:47
+ * @Description: 
+ */
+import React,{ useEffect,useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { useEffect } from 'react'
-import { useState } from 'react'
+// import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import styled from 'styled-components'
 // import ButtonConnectWallect from './common/ButtonConnectWallet'
 import Connectors from './Connectors'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
 export default function Header() {
   const navigate = useNavigate()
-  const { connection } = useConnection()
-  const wallet = useWallet()
-  const [balance, setBalance] = useState(0)
-  useEffect(() => {
-    if (!wallet.publicKey) return
-    ;(async (publicKey) => {
-      const _balance = await connection.getBalance(publicKey)
-      setBalance(_balance)
-    })(wallet.publicKey)
-  }, [wallet])
+  // const { connection } = useConnection()
+  // const wallet = useWallet()
+  // const [balance, setBalance] = useState(0)
+  // useEffect(() => {
+  //   if (!wallet.publicKey) return
+  //   ;(async (publicKey) => {
+  //     const _balance = await connection.getBalance(publicKey)
+  //     setBalance(_balance)
+  //   })(wallet.publicKey)
+  // }, [wallet])
 
   return (
     <HeaderWrapper>

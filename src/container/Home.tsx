@@ -62,25 +62,32 @@ function Home() {
   const myNFTDataStatus = useAppSelector(selectMyNFTDataStatus)
 
   useEffect(() => {
-    if (!wallet.publicKey) {
-      walletRef.current = ''
-      dispatch(clearMyNFT())
-      return
-    }
-    if (walletRef.current === wallet.publicKey.toString()) return
+    // if (!wallet.publicKey) {
+    //   walletRef.current = ''
+    //   dispatch(clearMyNFT())
+    //   return
+    // }
+    // if (walletRef.current === wallet.publicKey.toString()) return
 
-    walletRef.current = wallet.publicKey.toString()
-    const owner = wallet.publicKey
-    dispatch(getMyNFTokens({ owner }))
-  }, [wallet])
+    // walletRef.current = wallet.publicKey.toString()
+    // const owner = wallet.publicKey
+    // dispatch(getMyNFTokens({ owner }))
+  }, [])
 
   useEffect(() => {
     if (exploreNFTStatus === 'init') {
-      dispatch(getExploreDataWithCollectionId({ collectionId: collections[0] }))
+      const payload = {
+        // owner: '0xc30306aefe81ea26ad9b839941516efdb62b9c97',
+        order_direction: 'desc',
+        offset: 0,
+        limit: 20,
+        collection: 'azuki-god',
+      }
+      dispatch(getExploreData(payload))
       // 分步取数据的 DEMO，collections 可与 selectExploreDataHasGetCollectionIds 做 diff
-      setTimeout(() => {
-        dispatch(getExploreDataWithCollectionId({ collectionId: collections[1] }))
-      }, 15000)
+      // setTimeout(() => {
+      //   dispatch(getExploreDataWithCollectionId({ collectionId: collections[1] }))
+      // }, 15000)
     }
   }, [])
 
@@ -140,12 +147,12 @@ function Home() {
           <NFTList data={nftList} />
         </div>
       </div>
-      {!wallet.publicKey && (
+      {/* {!wallet.publicKey && (
         <div className="bottom">
           <span className="connect-desc">connect your NFT</span>
           <ButtonConnectWallect />
         </div>
-      )}
+      )} */}
     </HomeWrapper>
   )
 }

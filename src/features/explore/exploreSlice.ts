@@ -1,10 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { Connection, PublicKey } from '@solana/web3.js'
 import log from 'loglevel'
 
 import { RootState } from '../../store/store'
 
-import { Contract, NFT } from '../../synft'
+import { Contract, NFT, GetNFTPayload } from '../../synft'
 import { loadExploreNFT } from './exploreData'
 
 interface ExploreNFT {
@@ -21,49 +20,51 @@ const initialState: ExploreNFT = {
   err: '',
 }
 
-export const getExploreData = createAsyncThunk(
-  'explore/nftdata',
-  async ({ collectionIds, connection }: { collectionIds: string[]; connection: Connection }) => {
-    const contract = Contract.getInstance()
-    const dataArr = await Promise.all(
-      collectionIds.map(async (collectionID) => {
-        const d: NFT[] = await loadExploreNFT(collectionID)
-        await Promise.all(
-          d.map(async (item) => {
-            try {
-              const mintKey = new PublicKey(item.mint)
-              const hasCopied = await contract.getMintAccountInfo(mintKey)
-              item.hasCopied = !!hasCopied
-            } catch (error) {
-              log.error(error)
-            }
-          }),
-        )
-        return d
-      }),
-    )
-    const data = dataArr.reduce((a, b) => a.concat(b), [])
-    return data
-  },
-)
+export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload, thunkAPI) => {
+  // const contract = Contract.getInstance()
+  // const dataArr = await Promise.all(
+  //   collectionIds.map(async (collectionID) => {
+
+  const d: NFT[] = await loadExploreNFT(payload)
+
+  // thunkAPI.dispatch(exploreSlice.actions.incrData({ data: d }))
+  return d
+  // return d
+  //     await Promise.all(
+  //       d.map(async (item) => {
+  //         try {
+  //           const mintKey = new PublicKey(item.mint)
+  //           const hasCopied = await contract.getMintAccountInfo(mintKey)
+  //           item.hasCopied = !!hasCopied
+  //         } catch (error) {
+  //           log.error(error)
+  //         }
+  //       }),
+  //     )
+  //     return d
+  //   }),
+  // )
+  // const data = dataArr.reduce((a, b) => a.concat(b), [])
+  // return data
+})
 
 export const getExploreDataWithCollectionId = createAsyncThunk(
   'explore/nftDataWithCollectionId',
   async ({ collectionId }: { collectionId: string }, thunkAPI) => {
-    const contract = Contract.getInstance()
-    const d: NFT[] = await loadExploreNFT(collectionId)
-    await Promise.all(
-      d.map(async (item) => {
-        try {
-          const mintKey = new PublicKey(item.mint)
-          const hasCopied = await contract.getMintAccountInfo(mintKey)
-          item.hasCopied = !!hasCopied
-        } catch (error) {
-          log.error(error)
-        }
-      }),
-    )
-    thunkAPI.dispatch(exploreSlice.actions.incrData({ data: d, collectionId }))
+    // const contract = Contract.getInstance()
+    // const d: NFT[] = await loadExploreNFT(collectionId)
+    // await Promise.all(
+    //   d.map(async (item) => {
+    //     try {
+    //       const mintKey = new PublicKey(item.mint)
+    //       const hasCopied = await contract.getMintAccountInfo(mintKey)
+    //       item.hasCopied = !!hasCopied
+    //     } catch (error) {
+    //       log.error(error)
+    //     }
+    //   }),
+    // )
+    // thunkAPI.dispatch(exploreSlice.actions.incrData({ data: d, collectionId }))
   },
 )
 
@@ -72,10 +73,10 @@ export const exploreSlice = createSlice({
   initialState,
   reducers: {
     incrData: (state, action) => {
-      if (!state.hasGetCollectionIds.includes(action.payload.collectionId)) {
-        state.data = state.data.concat(action.payload.data)
-        state.hasGetCollectionIds.push(action.payload.collectionId)
-      }
+      // if (!state.hasGetCollectionIds.includes(action.payload.collectionId)) {
+      state.data = state.data.concat(action.payload.data)
+      // state.hasGetCollectionIds.push(action.payload.collectionId)
+      // }
     },
   },
   extraReducers: (builder) => {
@@ -85,6 +86,7 @@ export const exploreSlice = createSlice({
       })
       .addCase(getExploreData.fulfilled, (state, action) => {
         state.status = 'done'
+        // console.log(action, '----------')
         state.data = action.payload
       })
       .addCase(getExploreData.rejected, (state, action) => {

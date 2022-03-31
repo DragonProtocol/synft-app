@@ -5,6 +5,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import expandMoreIcon from './icons/expandMore.svg'
 import { CursorPointerUpCss } from '../GlobalStyle'
+
 import NFTTree from './NFTTree'
 import { Node } from '../synft'
 interface NFTShowerData {
@@ -15,7 +16,8 @@ interface NFTShowerData {
   }
 }
 interface Props {
-  data: NFTShowerData
+  data: any
+  // data: NFTShowerData
 }
 const ExpandMoreIcon = () => (
   <>
@@ -23,8 +25,9 @@ const ExpandMoreIcon = () => (
   </>
 )
 export default function NFTShower({ data }: Props) {
-  const { injectTree, jsonData: info } = data
+  const info = data
   const [currentAccordion, setCurrentAccordion] = useState('enchantment')
+
   const handleAccordionChange = (accordion: string, isExpanded: boolean) => {
     if (isExpanded) {
       setCurrentAccordion(accordion)
@@ -36,13 +39,14 @@ export default function NFTShower({ data }: Props) {
   if (!info) {
     return null
   }
+
   return (
     <NFTShowerWrapper>
       <div className="img-box">
         <img src={info.image} alt={info.image} />
       </div>
       <div className="info-box">
-        <Accordion
+        {/* <Accordion
           className="info-item"
           style={{ display: injectTree.data.curr.children.length > 0 ? 'block' : 'none' }}
           expanded={currentAccordion === 'enchantment'}
@@ -54,7 +58,7 @@ export default function NFTShower({ data }: Props) {
           <AccordionDetails className="info-content">
             {injectTree.loading ? <div>loading...</div> : <NFTTree data={injectTree.data} />}
           </AccordionDetails>
-        </Accordion>
+        </Accordion> */}
         {info.description && (
           <Accordion
             className="info-item"
@@ -68,7 +72,7 @@ export default function NFTShower({ data }: Props) {
           </Accordion>
         )}
 
-        {info?.attributes && (
+        {info?.traits && (
           <Accordion
             className="info-item"
             expanded={currentAccordion === 'properties'}
@@ -78,7 +82,7 @@ export default function NFTShower({ data }: Props) {
               properties
             </AccordionSummary>
             <AccordionDetails className="info-content properties-content">
-              {info?.attributes?.map((item: any, idx: number) => (
+              {info?.traits?.map((item: any, idx: number) => (
                 <div key={idx} className="properties-item">
                   <div className="properties-key">{item.trait_type}</div>
                   <div className="properties-value">{item.value}</div>

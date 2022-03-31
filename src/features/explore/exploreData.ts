@@ -1,46 +1,21 @@
-import { request, gql } from 'graphql-request'
-import { PublicKey } from '@solana/web3.js'
+import { stringify } from 'query-string'
 import log from 'loglevel'
 
-import { NFT } from '../../synft'
+import { NFT, GetNFTPayload } from '../../synft'
 import { isProd } from '../../utils'
 
 const endpoint = isProd
-  ? 'https://api.wonkalabs.xyz/v0.1/solana/mainnet/graphql?src=wonka-js'
-  : 'https://api.wonkalabs.xyz/v0.1/solana/devnet/graphql?src=wonka-js'
+  ? 'https://testnets-api.opensea.io/api/v1/assets'
+  : 'https://testnets-api.opensea.io/api/v1/assets'
 
 log.log('WONKALABS_ENDPORINT', endpoint)
 
-export async function loadExploreNFT(collectionId: String, first: number = 50): Promise<NFT[]> {
-  log.info(`Fetching NFTs by collectionID: ${collectionId}`)
-  const collectionID = new PublicKey(collectionId)
-  const fetchNFTsByCandyMachineQuery = gql`
-    {
-      nftsByCollection(collectionId:"${collectionID.toString()}", first:${first}) {
-        edges {
-          node {
-            id
-            name
-            symbol
-            image {
-              orig
-            }
-            metaplex_metadata {
-              mint
-            }
-          }
-        }
-      }
-    }`
-  const results = await request(endpoint, fetchNFTsByCandyMachineQuery)
-  const nfts = results.nftsByCollection.edges
-    .map((edge: any) => ({
-      name: edge.node.name,
-      mint: edge.node.metaplex_metadata.mint,
-      image: edge.node.image?.orig,
-    }))
-    .filter((item: any) => !!item.image)
-  return nfts
+export async function loadExploreNFT(payload: GetNFTPayload): Promise<any[]> {
+  log.info(`Fetching NFTs by collectionID: `)
+
+  const result = await (await fetch(`${endpoint}?${stringify(payload)}`)).json()
+
+  return result.assets.map((o:any) => ({...o,image:o.image_url}))
 }
 
 export default {}

@@ -55,10 +55,12 @@ export type NFT = {
   name: string
   hasCopied?: boolean
   hasInjected?: boolean
+  id?: number
 }
 
 export type NFTDataItem = NFT & {
   uri?: string
+  id?: number
 }
 
 // eslint-disable-next-line no-shadow
