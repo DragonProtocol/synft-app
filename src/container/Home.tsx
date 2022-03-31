@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import styled from 'styled-components'
+
+import { useWeb3Context } from '../components/ConnectedWeb3'
 
 import NFTList, { NftDataItem } from '../components/NFTList'
 import { getMyNFTokens, clearMyNFT, selectMyNFTData, selectMyNFTDataStatus } from '../features/my/mySlice'
@@ -22,13 +23,14 @@ import { MOBILE_BREAK_POINT } from '../utils/constants'
 import { backToTop } from '../utils/tools'
 
 function Home() {
-  const wallet = useWallet()
-  const walletRef = useRef('')
-  const { connection } = useConnection()
+  const context = useWeb3Context()
+  const { account } = context
+
   const [tab, setTab] = useState(localStorage.getItem('tab') || 'explore') // explore | my
   const titleRefExplore = useRef<SplitTextOpacityFuns>(null)
   const titleRefMy = useRef<SplitTextOpacityFuns>(null)
   const titleRefMy2 = useRef<SplitTextOpacityFuns>(null)
+
   const switchList = (name: string) => {
     if (name === tab) {
       switch (name) {
@@ -62,19 +64,15 @@ function Home() {
   const myNFTDataStatus = useAppSelector(selectMyNFTDataStatus)
 
   useEffect(() => {
-    // if (!wallet.publicKey) {
-    //   walletRef.current = ''
-    //   dispatch(clearMyNFT())
-    //   return
-    // }
-    // if (walletRef.current === wallet.publicKey.toString()) return
-
-    // walletRef.current = wallet.publicKey.toString()
-    // const owner = wallet.publicKey
-    // dispatch(getMyNFTokens({ owner }))
-  }, [])
+    if (!account) {
+      dispatch(clearMyNFT())
+      return
+    }
+    dispatch(getMyNFTokens({ owner: account }))
+  }, [account])
 
   useEffect(() => {
+    // TODO 分页
     if (exploreNFTStatus === 'init') {
       const payload = {
         // owner: '0xc30306aefe81ea26ad9b839941516efdb62b9c97',
@@ -147,12 +145,12 @@ function Home() {
           <NFTList data={nftList} />
         </div>
       </div>
-      {/* {!wallet.publicKey && (
+      {!account && (
         <div className="bottom">
           <span className="connect-desc">connect your NFT</span>
-          <ButtonConnectWallect />
+          <ButtonConnectWallect context={context}/>
         </div>
-      )} */}
+      )}
     </HomeWrapper>
   )
 }

@@ -20,7 +20,7 @@ import { MetadataData } from '@metaplex-foundation/mpl-token-metadata'
 import log from 'loglevel'
 import { InjectType } from '../synft'
 
-import { connectWallet } from '../components/Connectors'
+// import { connectWallet } from '../components/Connectors'
 
 interface Props {
   // metadata: MetadataData
@@ -136,30 +136,30 @@ const NFTHandler: React.FC<Props> = (props: Props) => {
   }
 
   const onCopyWithInject = async ({ injectType, injectMode, token, nft }: OnInjectProps) => {
-    try {
-      const { signer, contract } = await connectWallet()
-      const contractWithSigner = contract.connect(signer)
-      const address = await signer.getAddress()
-      const value = ethers.utils.parseEther('0.1')
+    // try {
+    //   const { signer, contract } = await connectWallet()
+    //   const contractWithSigner = contract.connect(signer)
+    //   const address = await signer.getAddress()
+    //   const value = ethers.utils.parseEther('0.1')
 
-      console.log(address, 'address')
-      console.log(metadata.asset_contract.address, 'metadata.asset_contract.address')
-      console.log(metadata.token_id, 'metadata.token_id')
-      console.log(value, 'value')
+    //   console.log(address, 'address')
+    //   console.log(metadata.asset_contract.address, 'metadata.asset_contract.address')
+    //   console.log(metadata.token_id, 'metadata.token_id')
+    //   console.log(value, 'value')
 
-      const tx = await contractWithSigner.mint(
-        address, // address to 合成NFT的接收人
-        metadata.asset_contract.address,// address contractAddr 原始NFT的合约地址
-        metadata.token_id,// tokenId 原始NFT的tokenid
-        {
-          value,
-        },
-      )
-      const response = await tx.wait()
-      console.log(response, 'responseresponseresponse')
-    } catch (err) {
-      console.log(err, 'err')
-    }
+    //   const tx = await contractWithSigner.mint(
+    //     address, // address to 合成NFT的接收人
+    //     metadata.asset_contract.address,// address contractAddr 原始NFT的合约地址
+    //     metadata.token_id,// tokenId 原始NFT的tokenid
+    //     {
+    //       value,
+    //     },
+    //   )
+    //   const response = await tx.wait()
+    //   console.log(response, 'responseresponseresponse')
+    // } catch (err) {
+    //   console.log(err, 'err')
+    // }
 
     // ---------------------------------------------------------------------------------------
 

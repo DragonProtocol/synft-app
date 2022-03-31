@@ -86,7 +86,6 @@ export const exploreSlice = createSlice({
       })
       .addCase(getExploreData.fulfilled, (state, action) => {
         state.status = 'done'
-        // console.log(action, '----------')
         state.data = action.payload
       })
       .addCase(getExploreData.rejected, (state, action) => {
