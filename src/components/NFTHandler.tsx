@@ -41,9 +41,10 @@ const NFTHandler: React.FC<Props> = (props: Props) => {
       const contractWithSigner = contract.connect(signer)
 
       const tx = await contractWithSigner.refund(
-        info.token_id, // tokenId NFT的tokenid
+        info.token_id, // copy NFT的 tokenid
       )
       const response = await tx.wait()
+      // console.log(response, 'response')
       navigate(`/`)
     } catch (err) {
       console.log(err, 'err')

@@ -97,22 +97,14 @@ const NftInject: React.FC<RefProps> = ({
       return true
     }
   }
+
   useEffect(() => {
     if (token.volume) validateVolume()
   }, [token.volume])
-  // const handleInject = () => {
-  //   if (!onInject) return
-  //   // 验证是否输入金额或选择其它nft
-  //   if (!Number(token.volume) && !nft.mint) {
-  //     showValidate('Please enter an asset or select an NFT')
-  //     return
-  //   }
-  //   // if (!validateVolume()) return
-  //   onInject({ injectMode, injectType, token, nft })
-  // }
+
   const handleCopyWithInject = () => {
     if (!onCopyWithInject) return
-    // if (!validateVolume()) return
+    if (!validateVolume()) return
     onCopyWithInject(token)
   }
 

@@ -3,8 +3,8 @@ import log from 'loglevel'
 import { ethers, BigNumber } from 'ethers'
 
 import { RootState } from '../../store/store'
-import { zeropad } from '../../utils/tools'
-import { network,contractAddress } from '../../utils'
+import { zeropad,formatBigNumber } from '../../utils/tools'
+import { network, contractAddress } from '../../utils'
 
 import { NFT, GetNFTPayload } from '../../synft'
 import { loadExploreNFT } from './exploreData'
@@ -26,10 +26,9 @@ const initialState: ExploreNFT = {
 }
 
 export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload) => {
-
   const provider = ethers.getDefaultProvider(network)
   const contract = new ethers.Contract(contractAddress, syntheticNft.abi, provider)
-  
+
   // const currentValue = contract._uniques('0x07eaf1c54cd27e045bebfc0eb0f4d7c99dcfc777b11c6b18f5aa7250afb78063').then((res:any) => console.log(res,'res')).catch((err:any) => console.log(err,'err'))
 
   const d: NFT[] = await loadExploreNFT(payload)
@@ -42,8 +41,9 @@ export const getExploreData = createAsyncThunk('explore/nftdata', async (payload
         )
         /* eslint no-underscore-dangle: 0 */
         const hasCopied = await contract._uniques(bytes32)
-
-        item.hasCopied = !BigNumber.from(hasCopied).isZero()
+        // 查询是否有余额
+        const balances = await contract._etherBalances(formatBigNumber(hasCopied,0,0))
+        item.hasCopied = !BigNumber.from(balances).isZero()
       } catch (error) {
         log.error(error)
       }
