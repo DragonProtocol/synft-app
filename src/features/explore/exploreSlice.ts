@@ -1,10 +1,15 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import log from 'loglevel'
+import { ethers, BigNumber } from 'ethers'
 
 import { RootState } from '../../store/store'
+import { zeropad } from '../../utils/tools'
+import { network,contractAddress } from '../../utils'
 
-import { Contract, NFT, GetNFTPayload } from '../../synft'
+import { NFT, GetNFTPayload } from '../../synft'
 import { loadExploreNFT } from './exploreData'
+
+import syntheticNft from '../../abi/synthetic-nft.json'
 
 interface ExploreNFT {
   hasGetCollectionIds: string[]
@@ -20,32 +25,32 @@ const initialState: ExploreNFT = {
   err: '',
 }
 
-export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload, thunkAPI) => {
-  // const contract = Contract.getInstance()
-  // const dataArr = await Promise.all(
-  //   collectionIds.map(async (collectionID) => {
+export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload) => {
+
+  const provider = ethers.getDefaultProvider(network)
+  const contract = new ethers.Contract(contractAddress, syntheticNft.abi, provider)
+  
+  // const currentValue = contract._uniques('0x07eaf1c54cd27e045bebfc0eb0f4d7c99dcfc777b11c6b18f5aa7250afb78063').then((res:any) => console.log(res,'res')).catch((err:any) => console.log(err,'err'))
 
   const d: NFT[] = await loadExploreNFT(payload)
+  await Promise.all(
+    d.map(async (item) => {
+      try {
+        const bytes32 = ethers.utils.keccak256(
+          zeropad(item.asset_contract.address, 32, '0x') +
+            zeropad(BigNumber.from(item.token_id).toHexString().replace('0x', ''), 32),
+        )
+        /* eslint no-underscore-dangle: 0 */
+        const hasCopied = await contract._uniques(bytes32)
 
-  // thunkAPI.dispatch(exploreSlice.actions.incrData({ data: d }))
+        item.hasCopied = !BigNumber.from(hasCopied).isZero()
+      } catch (error) {
+        log.error(error)
+      }
+    }),
+  )
+
   return d
-  // return d
-  //     await Promise.all(
-  //       d.map(async (item) => {
-  //         try {
-  //           const mintKey = new PublicKey(item.mint)
-  //           const hasCopied = await contract.getMintAccountInfo(mintKey)
-  //           item.hasCopied = !!hasCopied
-  //         } catch (error) {
-  //           log.error(error)
-  //         }
-  //       }),
-  //     )
-  //     return d
-  //   }),
-  // )
-  // const data = dataArr.reduce((a, b) => a.concat(b), [])
-  // return data
 })
 
 export const getExploreDataWithCollectionId = createAsyncThunk(

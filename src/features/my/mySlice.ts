@@ -3,8 +3,10 @@ import { PublicKey } from '@solana/web3.js'
 import log from 'loglevel'
 
 import { RootState } from '../../store/store'
+import { loadExploreNFT } from '../explore/exploreData'
 
 import { Contract, NFT } from '../../synft'
+
 
 type Token = {
   mint: PublicKey
@@ -29,37 +31,40 @@ const initialState: MyNFT = {
   err: '',
 }
 
-export const getMyNFTokens = createAsyncThunk('my/nftdata', async ({ owner }: { owner: PublicKey }, thunkAPI) => {
-  const contract = Contract.getInstance()
-  log.info('init myNFTData with wallet.publicKey', owner.toString())
-  const filteredTokens = await contract.getValidNFTokensWithOwner(owner)
-  thunkAPI.dispatch(getMyNFTData({ nfts: filteredTokens }))
-  return filteredTokens
+export const getMyNFTData = createAsyncThunk('my/nftdata', async ({ owner }: { owner: any }, thunkAPI) => {
+  const d: NFT[] = await loadExploreNFT({owner})
+  thunkAPI.dispatch(myNFTSlice.actions.incrDataWithArr({ data: d }))
+  thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'done' }))
+  // const contract = Contract.getInstance()
+  // log.info('init myNFTData with wallet.publicKey', owner.toString())
+  // const filteredTokens = await contract.getValidNFTokensWithOwner(owner)
+  // thunkAPI.dispatch(getMyNFTData({ nfts: filteredTokens }))
+  // return filteredTokens
 })
 
-export const getMyNFTData = createAsyncThunk('my/nftmetadata', async ({ nfts }: { nfts: Token[] }, thunkAPI) => {
-  const contract = Contract.getInstance()
-  thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'loading' }))
-  const data = await Promise.all(
-    nfts.map(async (item) => {
-      try {
-        const metadataInfo = await contract.getMetadataInfoWithMint(item.mint)
-        if (!metadataInfo) return null
-        return {
-          image: metadataInfo.externalMetadata.image,
-          mint: metadataInfo.metadata.mint,
-          name: metadataInfo.externalMetadata.name,
-          hasInjected: false,
-        }
-      } catch (error) {
-        return null
-      }
-    }),
-  )
-  const validData = data.filter((item) => item !== null)
-  thunkAPI.dispatch(myNFTSlice.actions.incrDataWithArr({ data: validData }))
-  thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'done' }))
-})
+// export const getMyNFTData = createAsyncThunk('my/nftmetadata', async ({ nfts }: { nfts: Token[] }, thunkAPI) => {
+//   const contract = Contract.getInstance()
+//   thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'loading' }))
+//   const data = await Promise.all(
+//     nfts.map(async (item) => {
+//       try {
+//         const metadataInfo = await contract.getMetadataInfoWithMint(item.mint)
+//         if (!metadataInfo) return null
+//         return {
+//           image: metadataInfo.externalMetadata.image,
+//           mint: metadataInfo.metadata.mint,
+//           name: metadataInfo.externalMetadata.name,
+//           hasInjected: false,
+//         }
+//       } catch (error) {
+//         return null
+//       }
+//     }),
+//   )
+//   const validData = data.filter((item) => item !== null)
+//   thunkAPI.dispatch(myNFTSlice.actions.incrDataWithArr({ data: validData }))
+//   thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'done' }))
+// })
 
 export const myNFTSlice = createSlice({
   name: 'my/collection',
@@ -83,18 +88,18 @@ export const myNFTSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(getMyNFTokens.pending, (state) => {
-        state.loading = true
-      })
-      .addCase(getMyNFTokens.fulfilled, (state, action) => {
-        state.loading = false
-        state.nfts = action.payload
-      })
-      .addCase(getMyNFTokens.rejected, (state, action) => {
-        state.loading = false
-        state.err = action.error.message || 'failed'
-      })
+    // builder
+    //   .addCase(getMyNFTokens.pending, (state) => {
+    //     state.loading = true
+    //   })
+    //   .addCase(getMyNFTokens.fulfilled, (state, action) => {
+    //     state.loading = false
+    //     state.nfts = action.payload
+    //   })
+    //   .addCase(getMyNFTokens.rejected, (state, action) => {
+    //     state.loading = false
+    //     state.err = action.error.message || 'failed'
+    //   })
   },
 })
 

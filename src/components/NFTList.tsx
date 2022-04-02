@@ -52,7 +52,7 @@ const NFTList: React.FC<Props> = (props: Props) => {
           <animated.div
             key={item.id}
             className="list-item"
-            onClick={() => navigate(`/info/${item.id}`)}
+            onClick={() => navigate(`/info/${item?.asset_contract.address}/${item.token_id}`)}
             style={{ ...(cardAnimateds[idx] || {}) }}
             onMouseOverCapture={() => cardTo(idx, 'onMouseOverCapture')}
             onMouseOutCapture={() => cardTo(idx, 'onMouseOutCapture')}

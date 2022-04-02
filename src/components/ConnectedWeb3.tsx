@@ -1,7 +1,7 @@
 /*
  * @Author: HuangBoWen
  * @Date: 2022-03-24 22:45:06
- * @LastEditTime: 2022-03-31 18:40:53
+ * @LastEditTime: 2022-04-02 11:15:20
  * @LastEditors: HuangBoWen
  * @Description:
  */
@@ -10,12 +10,10 @@ import React, { useState, useEffect } from 'react'
 import Web3Modal from 'web3modal'
 import { ethers } from 'ethers'
 import Portis from '@portis/web3'
-import styled from 'styled-components'
 
 import syntheticNft from '../abi/synthetic-nft.json'
 
-import { ButtonBaseCss, ButtonProps } from '../components/common/ButtonBase'
-import { formatAddress } from '../utils/tools'
+import { network,contractAddress } from '../utils'
 
 const providerOptions = {
   portis: {
@@ -62,7 +60,7 @@ export const ConnectedWeb3: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     setWeb3ModelInstance(
       new Web3Modal({
-        network: 'rinkeby',
+        network: network,
         cacheProvider: true,
         providerOptions,
       }),
@@ -75,6 +73,7 @@ export const ConnectedWeb3: React.FC<Props> = (props: Props) => {
   },[web3ModelInstance])
 
   const disconnectWallet = async () => {
+    if(!web3ModelInstance) return
     setWeb3Model({
       provider: undefined,
       signer: undefined,
@@ -88,7 +87,7 @@ export const ConnectedWeb3: React.FC<Props> = (props: Props) => {
   const connectWallet = async () => {
     setLoading(true)
     const connectObj = { ...web3Model }
-    if (!connectObj.instance) {
+    if (web3ModelInstance && !connectObj.instance) {
 
       connectObj.instance = await web3ModelInstance.connect()
 
@@ -97,14 +96,13 @@ export const ConnectedWeb3: React.FC<Props> = (props: Props) => {
       connectObj.signer = connectObj.provider.getSigner()
 
       connectObj.contract = new ethers.Contract(
-        // '0xf02dec16c21cc25cd033e9cf066c5ffcdab37beb',
-        '0x6305348eed237ac2a24668e085c388e8794ece20',
+        contractAddress,
         syntheticNft.abi,
         connectObj.provider,
       )
 
       connectObj.address = await connectObj.signer.getAddress()
-      
+
     }
 
     try {

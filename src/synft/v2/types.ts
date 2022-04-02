@@ -56,6 +56,8 @@ export type NFT = {
   hasCopied?: boolean
   hasInjected?: boolean
   id?: number
+  asset_contract?: any
+  token_id?: string
 }
 
 export type NFTDataItem = NFT & {

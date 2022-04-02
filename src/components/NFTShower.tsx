@@ -16,7 +16,7 @@ interface NFTShowerData {
   }
 }
 interface Props {
-  data: any
+  info: any
   // data: NFTShowerData
 }
 const ExpandMoreIcon = () => (
@@ -24,8 +24,7 @@ const ExpandMoreIcon = () => (
     <img src={expandMoreIcon}></img>
   </>
 )
-export default function NFTShower({ data }: Props) {
-  const info = data
+export default function NFTShower({ info }: Props) {
   const [currentAccordion, setCurrentAccordion] = useState('enchantment')
 
   const handleAccordionChange = (accordion: string, isExpanded: boolean) => {

@@ -12,10 +12,14 @@ log.log('WONKALABS_ENDPORINT', endpoint)
 
 export async function loadExploreNFT(payload: GetNFTPayload): Promise<any[]> {
   log.info(`Fetching NFTs by collectionID: `)
+  const result = await (
+    await fetch(`${endpoint}?${stringify({ ...payload, order_direction: 'desc', offset: 0, limit: 20 })}`)
+  ).json()
 
-  const result = await (await fetch(`${endpoint}?${stringify(payload)}`)).json()
-
-  return result.assets.map((o:any) => ({...o,image:o.image_url}))
+  return result.assets.map((o: any) => ({
+    ...o,
+    image: o.image_url
+  }))
 }
 
 export default {}

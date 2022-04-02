@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Dialog, DialogContent, DialogTitle, ImageList, ImageListItem } from '@mui/material'
+import { Alert, AlertTitle } from '@mui/material'
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { NftDataItem, NFTListWrapper } from '../NFTList'
@@ -11,6 +11,8 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { ButtonDanger, ButtonPrimary, ButtonWarning } from '../common/ButtonBase'
 import { MOBILE_BREAK_POINT } from '../../utils/constants'
 import { InjectType } from '../../synft'
+import { useWeb3Context } from '../ConnectedWeb3'
+import { formatBigNumber } from '../../utils/tools'
 
 export type Token = {
   name: string
@@ -41,10 +43,10 @@ export interface OnInjectProps {
 type Nft = { mint: string; image: string; name: string }
 interface Props {
   withCopyInit: boolean
-  nftOptions: NftDataItem[]
+  // nftOptions: NftDataItem[]
   onInject?: (props: OnInjectProps) => void
-  onCopyWithInject?: (props: OnInjectProps) => void
-  onExtract?: () => void
+  onCopyWithInject?: (token: Token) => void
+  onBurn?: () => void
   mintMetadata?: any
 }
 
@@ -52,40 +54,33 @@ interface RefProps extends Props {
   nft: Nft
   setNft: (n: Nft) => void
 }
-const INJECT_MODES = [InjectMode.Reversible, InjectMode.Irreversible]
+// evm 只有不可逆的 mode
+// const INJECT_MODES = [InjectMode.Reversible, InjectMode.Irreversible]
 
 const NftInject: React.FC<RefProps> = ({
-  nftOptions,
+  // nftOptions,
   onInject,
   withCopyInit,
   onCopyWithInject,
   mintMetadata,
-  onExtract,
+  onBurn,
   nft,
   setNft,
 }: RefProps) => {
-  const { connection } = useConnection()
-  const wallet = useWallet()
+
+  const { account, signer, contract } = useWeb3Context()
+      // let i = await connectObj.signer.getBalance()
+      // const contractWithSigner = contract.connect(signer)
+      // const address = await signer.getAddress()
+
   const [balance, setBalance] = useState(0)
   const [injectMode, setInjectMode] = useState<InjectMode>(InjectMode.Reversible)
   const [token, setToken] = useState<Token>(TOKEN_DEFAULT)
-  const [visibleNftList, setVisibleNftList] = useState(false)
   // const [nftJsonData, setNftJsonData] = useState<any[]>([])
   const [checkTip, setCheckTip] = useState({ visible: false, msg: '' })
   const disabledToken = nft?.name ? true : false
-  const disabledNft = token?.volume ? true : false
   const injectType = disabledToken ? InjectType.NFT : InjectType.SOL
-  const handleOpenNftList = () => {
-    setVisibleNftList(true)
-  }
-  const handleCloseNftList = () => {
-    setVisibleNftList(false)
-  }
-  const handleCheckedNft = (nft: NftDataItem) => {
-    setNft(nft)
-    setVisibleNftList(false)
-  }
-  const handleDeleteNft = () => setNft({ mint: '', image: '', name: '' })
+
   const showValidate = (msg: string) => {
     setCheckTip({ visible: true, msg })
     setTimeout(() => {
@@ -102,45 +97,33 @@ const NftInject: React.FC<RefProps> = ({
       return true
     }
   }
-  // useEffect(() => {
-  //   if (token.volume) validateVolume()
-  // }, [token.volume])
-  const handleInject = () => {
-    if (!onInject) return
-    // 验证是否输入金额或选择其它nft
-    if (!Number(token.volume) && !nft.mint) {
-      showValidate('Please enter an asset or select an NFT')
-      return
-    }
-    // if (!validateVolume()) return
-    onInject({ injectMode, injectType, token, nft })
-  }
+  useEffect(() => {
+    if (token.volume) validateVolume()
+  }, [token.volume])
+  // const handleInject = () => {
+  //   if (!onInject) return
+  //   // 验证是否输入金额或选择其它nft
+  //   if (!Number(token.volume) && !nft.mint) {
+  //     showValidate('Please enter an asset or select an NFT')
+  //     return
+  //   }
+  //   // if (!validateVolume()) return
+  //   onInject({ injectMode, injectType, token, nft })
+  // }
   const handleCopyWithInject = () => {
     if (!onCopyWithInject) return
     // if (!validateVolume()) return
-    onCopyWithInject({ injectMode, injectType, token, nft })
+    onCopyWithInject(token)
   }
-  // 获取nft列表
-  // useEffect(() => {
-  //   ;(async () => {
-  //     const promises = nftOptions.map(async (item) => {
-  //       const response = await fetch(item.uri || '')
-  //       const jsonData = await response.json()
-  //       return { ...item, ...jsonData }
-  //     })
-  //     const res = await Promise.allSettled(promises)
-  //     const jsonData = res.filter((item) => item.status === 'fulfilled').map((item: any) => item.value)
-  //     setNftJsonData(jsonData)
-  //   })()
-  // }, [nftOptions])
+
   // 获取当前账户余额
-  // useEffect(() => {
-  //   if (!wallet.publicKey) return
-  //   ;(async (publicKey) => {
-  //     const _balance = await connection.getBalance(publicKey)
-  //     setBalance(_balance)
-  //   })(wallet.publicKey)
-  // }, [wallet])
+  useEffect(() => {
+    if (!account) return
+    ;(async () => {
+      const _balance = await signer.getBalance()
+      setBalance(Number(formatBigNumber(_balance,0,2))/1000000000000000000)
+    })()
+  }, [account])
 
   return (
     <NftInjectWrapper>
@@ -151,14 +134,16 @@ const NftInject: React.FC<RefProps> = ({
             <input
               type="number"
               className={`token-value ${disabledToken ? 'disabled' : ''}`}
-              placeholder="0.00"
+              placeholder="0.10"
               value={token.volume}
-              onChange={(e) => setToken({ ...token, volume: Number(e.target.value) < 0.01 ? String(0.01) : e.target.value})}
+              // TODO 处理非法输入
+              onChange={(e) => setToken({ ...token, volume: e.target.value})}
             />
           </div>
         </div>
       )}
-      {!withCopyInit && (
+      {/* evm 去掉下面这两个功能 */}
+      {/* {!withCopyInit && (
         <div className="form-item">
           <div className="form-label">Embed other NFTs</div>
           <div className={`form-value select-nft-btn ${disabledNft ? 'disabled' : ''}`} onClick={handleOpenNftList}>
@@ -174,7 +159,7 @@ const NftInject: React.FC<RefProps> = ({
             )}
           </div>
         </div>
-      )}
+      )} */}
       {/* <div className="form-item">
         <div className="form-label">Select Mode</div>
         <div className="form-value mode-selector">
@@ -202,43 +187,13 @@ const NftInject: React.FC<RefProps> = ({
           {' '}
           EnchaNFT!
         </ButtonWarning>
-      )) || (
-        <ButtonPrimary className="form-submit" onClick={handleInject}>
-          {/* {'> Embed SOL <'} */}
-          {'> Embed NFT<'}
-        </ButtonPrimary>
-      )}
-      {mintMetadata && (
-        <ButtonDanger className="form-submit" onClick={onExtract}>
+      )) }
+      {!withCopyInit && (
+        <ButtonDanger className="form-submit" onClick={onBurn}>
           {' '}
-          {`> extract (${mintMetadata.lamports / 1000000000} SOL) <`}{' '}
+          {`> BurnNFT`}{' '}
         </ButtonDanger>
       )}
-
-      <Dialog fullWidth={true} maxWidth="md" onClose={handleCloseNftList} open={visibleNftList}>
-        <DialogTitle>
-          <span>Select NFT</span>
-          <img
-            className="close-btn"
-            src={DialogCloseIcon}
-            style={{ position: 'absolute', top: '16px', right: '24px' }}
-            onClick={() => setVisibleNftList(false)}
-          />
-        </DialogTitle>
-        <DialogContent className="nft-list-content">
-          {nftOptions.length > 0 ? (
-            <NFTListWrapper>
-              {nftOptions.map((item, idx) => (
-                <div className="list-item nft-item" key={idx} onClick={() => handleCheckedNft(item)}>
-                  <NFTCard data={item}></NFTCard>
-                </div>
-              ))}
-            </NFTListWrapper>
-          ) : (
-            <div style={{ textAlign: 'center', height: '50px', lineHeight: '50px' }}>You have no NFT!</div>
-          )}
-        </DialogContent>
-      </Dialog>
     </NftInjectWrapper>
   )
 }

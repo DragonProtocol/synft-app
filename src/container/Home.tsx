@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useWeb3Context } from '../components/ConnectedWeb3'
 
 import NFTList, { NftDataItem } from '../components/NFTList'
-import { getMyNFTokens, clearMyNFT, selectMyNFTData, selectMyNFTDataStatus } from '../features/my/mySlice'
+import { getMyNFTData, clearMyNFT, selectMyNFTData, selectMyNFTDataStatus } from '../features/my/mySlice'
 import {
   getExploreData,
   getExploreDataWithCollectionId,
@@ -14,13 +14,13 @@ import {
 } from '../features/explore/exploreSlice'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 
-import { collections } from '../utils'
 import { ButtonPrimary, ButtonWarning } from '../components/common/ButtonBase'
 import ButtonConnectWallect from '../components/common/ButtonConnectWallet'
 import SplitTextOpacity, { SplitTextOpacityFuns } from '../components/common/animate/SplitTextOpacity'
 import LoadingIcon from '../components/imgs/Loading.gif'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
 import { backToTop } from '../utils/tools'
+import { collection } from '../utils'
 
 function Home() {
   const context = useWeb3Context()
@@ -68,18 +68,17 @@ function Home() {
       dispatch(clearMyNFT())
       return
     }
-    dispatch(getMyNFTokens({ owner: account }))
+    dispatch(getMyNFTData({ owner: account }))
   }, [account])
 
   useEffect(() => {
     // TODO 分页
     if (exploreNFTStatus === 'init') {
       const payload = {
-        // owner: '0xc30306aefe81ea26ad9b839941516efdb62b9c97',
         order_direction: 'desc',
         offset: 0,
         limit: 20,
-        collection: 'azuki-god',
+        collection
       }
       dispatch(getExploreData(payload))
       // 分步取数据的 DEMO，collections 可与 selectExploreDataHasGetCollectionIds 做 diff
@@ -148,7 +147,7 @@ function Home() {
       {!account && (
         <div className="bottom">
           <span className="connect-desc">connect your NFT</span>
-          <ButtonConnectWallect context={context}/>
+          <ButtonConnectWallect context={context} />
         </div>
       )}
     </HomeWrapper>
