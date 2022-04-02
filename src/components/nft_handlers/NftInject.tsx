@@ -90,7 +90,8 @@ const NftInject: React.FC<RefProps> = ({
   const validateVolume = (): boolean => {
     setCheckTip({ visible: false, msg: '' })
     // 如果是金额判断余额是否足够
-    if (!Number(token.volume) || Number(token.volume) * Math.pow(10, 9) > balance) {
+    if (!Number(token.volume) || Number(token.volume) > balance) {
+    // if (!Number(token.volume) || Number(token.volume) * Math.pow(10, 9) > balance) {
       showValidate('Insufficient balance')
       return false
     } else {
