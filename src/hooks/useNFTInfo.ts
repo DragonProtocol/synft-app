@@ -2,13 +2,13 @@
  * @Author: HuangBoWen
  * @Date: 2022-03-24 07:25:05
  * @LastEditors: HuangBoWen
- * @LastEditTime: 2022-04-02 11:29:36
+ * @LastEditTime: 2022-04-02 13:33:54
  * @Description:
  */
 import { useEffect, useState } from 'react'
 import { ethers, BigNumber } from 'ethers'
 
-import { zeropad } from '../utils/tools'
+import { zeropad,formatBigNumber } from '../utils/tools'
 import { network, contractAddress as ethersContract } from '../utils'
 import syntheticNft from '../abi/synthetic-nft.json'
 import { loadExploreNFT } from '../features/explore/exploreData'
@@ -36,7 +36,9 @@ export default (contractAddress?: string, tokenId?: string) => {
       const contract = new ethers.Contract(ethersContract, syntheticNft.abi, provider)
       /* eslint no-underscore-dangle: 0 */
       const hasCopied = await contract._uniques(bytes32)
-      item.hasCopied = !BigNumber.from(hasCopied).isZero()
+      // 查询是否有余额
+      const balances = await contract._etherBalances(formatBigNumber(hasCopied,0,0))
+      item.hasCopied = !BigNumber.from(balances).isZero()
 
       setInfo(item)
       setLoading(false)
