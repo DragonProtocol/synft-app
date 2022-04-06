@@ -1,29 +1,28 @@
-import { Connection, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 
-import { getMetadataFromMint } from '../features/info/infoOps'
+import { MetaInfo } from '../synft'
+import { useContract } from '../provider/ContractProvider'
 
-export default (mintKeys: PublicKey[], connection: Connection) => {
-  const [status, setStatus] = useState('idle')
-  // TODO: any 解决
-  const [data, setData] = useState<any[]>([])
+/**
+ * 获取 MetaInfo
+ */
+export default (mint: string | undefined) => {
+  const { contract } = useContract()
+
+  const [loading, setLoading] = useState(true)
+  const [info, setInfo] = useState<MetaInfo | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      setStatus('fetching')
-      // TODO: cache
-      const fetches = mintKeys.map(async (item) => {
-        const metadata = await getMetadataFromMint(connection, item)
-        const response = await fetch(metadata.data.data.uri)
-        const jsonData = await response.json()
-        return jsonData
-      })
-      const results = await Promise.all(fetches)
-      setData(results)
-      setStatus('fetched')
-    }
-    if (status !== 'fetching') fetchData()
-  }, [connection, mintKeys])
+    ;(async () => {
+      setLoading(true)
+      if (!mint) return
+      const mintKey = new PublicKey(mint)
+      const data: MetaInfo | null = await contract.getMetadataInfoWithMint(mintKey)
+      setInfo(data)
+      setLoading(false)
+    })()
+  }, [mint])
 
-  return { status, data }
+  return { info, loading }
 }
