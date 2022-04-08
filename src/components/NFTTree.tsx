@@ -99,7 +99,6 @@ const NFTTree: React.FC<Props> = (props: Props) => {
       setTreeData({ nodes: newNodes, edges })
     })()
   }, [injectTree])
-  console.info('treeData', treeData)
   useEffect(() => {
     const handleClick = (evt: IG6GraphEvent) => {
       const node = evt.item

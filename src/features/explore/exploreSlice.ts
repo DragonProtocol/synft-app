@@ -3,13 +3,11 @@ import log from 'loglevel'
 import { ethers, BigNumber } from 'ethers'
 
 import { RootState } from '../../store/store'
-import { zeropad,formatBigNumber } from '../../utils/tools'
-import { network, contractAddress } from '../../utils'
+import { zeropad, formatBigNumber, getHasCopied } from '../../utils/tools'
+// import { network, contractAddress } from '../../utils'
 
 import { NFT, GetNFTPayload } from '../../synft'
 import { loadExploreNFT } from './exploreData'
-
-import syntheticNft from '../../abi/synthetic-nft.json'
 
 interface ExploreNFT {
   hasGetCollectionIds: string[]
@@ -25,28 +23,24 @@ const initialState: ExploreNFT = {
   err: '',
 }
 
-export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload) => {
-  const provider = ethers.getDefaultProvider(network)
-  const contract = new ethers.Contract(contractAddress, syntheticNft.abi, provider)
+export const getExploreData = createAsyncThunk('explore/nftdata', async (payload: GetNFTPayload, thunkAPI) => {
+  // const provider = ethers.getDefaultProvider(network)
+  // const contract = new ethers.Contract(contractAddress, syntheticNft.abi, provider)
 
   // const currentValue = contract._uniques('0x07eaf1c54cd27e045bebfc0eb0f4d7c99dcfc777b11c6b18f5aa7250afb78063').then((res:any) => console.log(res,'res')).catch((err:any) => console.log(err,'err'))
 
   const d: NFT[] = await loadExploreNFT(payload)
   await Promise.all(
-    d.map(async (item) => {
+    d.map((item, i) => {
       try {
-        const bytes32 = ethers.utils.keccak256(
-          zeropad(item.asset_contract.address, 32, '0x') +
-            zeropad(BigNumber.from(item.token_id).toHexString().replace('0x', ''), 32),
-        )
-        /* eslint no-underscore-dangle: 0 */
-        const hasCopied = await contract._uniques(bytes32)
-        // 查询是否有余额
-        const balances = await contract._etherBalances(formatBigNumber(hasCopied,0,0))
-        item.hasCopied = !BigNumber.from(balances).isZero()
+        ;(async () => {
+          const hasCopied = await getHasCopied(item.asset_contract.address, item.token_id || '')
+          thunkAPI.dispatch(exploreSlice.actions.addHasCopied({ index: i, hasCopied }))
+        })()
       } catch (error) {
         log.error(error)
       }
+      return item
     }),
   )
 
@@ -82,6 +76,14 @@ export const exploreSlice = createSlice({
       state.data = state.data.concat(action.payload.data)
       // state.hasGetCollectionIds.push(action.payload.collectionId)
       // }
+    },
+    addHasCopied: (state, action) => {
+      const { index, hasCopied } = action.payload
+
+      const data = [...state.data]
+      data[index].hasCopied = hasCopied
+
+      state.data = data
     },
   },
   extraReducers: (builder) => {

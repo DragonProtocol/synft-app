@@ -67,11 +67,10 @@ const NftInject: React.FC<RefProps> = ({
   nft,
   setNft,
 }: RefProps) => {
-
   const { account, signer, contract } = useWeb3Context()
-      // let i = await connectObj.signer.getBalance()
-      // const contractWithSigner = contract.connect(signer)
-      // const address = await signer.getAddress()
+  // let i = await connectObj.signer.getBalance()
+  // const contractWithSigner = contract.connect(signer)
+  // const address = await signer.getAddress()
 
   const [balance, setBalance] = useState(0)
   const [injectMode, setInjectMode] = useState<InjectMode>(InjectMode.Reversible)
@@ -91,8 +90,11 @@ const NftInject: React.FC<RefProps> = ({
     setCheckTip({ visible: false, msg: '' })
     // 如果是金额判断余额是否足够
     if (!Number(token.volume) || Number(token.volume) > balance) {
-    // if (!Number(token.volume) || Number(token.volume) * Math.pow(10, 9) > balance) {
+      // if (!Number(token.volume) || Number(token.volume) * Math.pow(10, 9) > balance) {
       showValidate('Insufficient balance')
+      return false
+    } else if (Number(token.volume) < 0.1) {
+      showValidate('Amount must be greater than 0.1')
       return false
     } else {
       return true
@@ -114,7 +116,7 @@ const NftInject: React.FC<RefProps> = ({
     if (!account) return
     ;(async () => {
       const _balance = await signer.getBalance()
-      setBalance(Number(formatBigNumber(_balance,0,2))/1000000000000000000)
+      setBalance(Number(formatBigNumber(_balance, 0, 2)) / 1000000000000000000)
     })()
   }, [account])
 
@@ -130,7 +132,7 @@ const NftInject: React.FC<RefProps> = ({
               placeholder="0.10"
               value={token.volume}
               // TODO 处理非法输入
-              onChange={(e) => setToken({ ...token, volume: e.target.value})}
+              onChange={(e) => setToken({ ...token, volume: e.target.value })}
             />
           </div>
         </div>
@@ -175,12 +177,12 @@ const NftInject: React.FC<RefProps> = ({
         </Alert>
       )}
 
-      {(withCopyInit && (
+      {withCopyInit && (
         <ButtonWarning className="form-submit" onClick={handleCopyWithInject}>
           {' '}
           EnchaNFT!
         </ButtonWarning>
-      )) }
+      )}
       {!withCopyInit && (
         <ButtonDanger className="form-submit" onClick={onBurn}>
           {' '}

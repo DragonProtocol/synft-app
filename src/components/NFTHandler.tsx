@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, createRef } from 'react'
-// import { Alert, Snackbar } from '@mui/material'
+import { Alert, AlertColor, Backdrop, CircularProgress, Snackbar } from '@mui/material'
 
 import { useWallet, WalletContextState } from '@solana/wallet-adapter-react'
 import styled from 'styled-components'
@@ -11,7 +11,7 @@ import LoadingIcon from '../components/imgs/Loading.gif'
 
 import NftInject, { Token } from './nft_handlers/NftInject'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
-import { getBytes32,formatBigNumber } from '../utils/tools'
+import { getBytes32, formatBigNumber } from '../utils/tools'
 import { useWeb3Context } from './ConnectedWeb3'
 
 import log from 'loglevel'
@@ -19,17 +19,62 @@ interface Props {
   info: any
 }
 
+enum TransctionType {
+  INJECT = 'inject',
+  EXTRACT = 'extract',
+  TRANSFER = 'transfer',
+  BURN = 'burn',
+}
+const transactionMsg = {
+  [TransctionType.INJECT]: {
+    inProgress: 'enchanft transaction in progress ......',
+    successful: 'enchanft successful!',
+    failed: 'enchanft failed!',
+    cancel: 'enchanft transaction was canceled by user',
+  },
+  [TransctionType.EXTRACT]: {
+    inProgress: 'extract transaction in progress ......',
+    successful: 'extract successful!',
+    failed: 'extract failed!',
+    cancel: 'extract transaction was canceled by user',
+  },
+  [TransctionType.TRANSFER]: {
+    inProgress: 'transfer transaction in progress ......',
+    successful: 'transfer successful!',
+    failed: 'transfer failed!',
+    cancel: 'transfer transaction was canceled by user',
+  },
+  [TransctionType.BURN]: {
+    inProgress: 'burn transaction in progress ......',
+    successful: 'burn successful!',
+    failed: 'burn failed!',
+    cancel: 'burn transaction was canceled by user',
+  },
+}
+
 const NFTHandler: React.FC<Props> = (props: Props) => {
   const { info } = props
 
   const injectRef = useRef<{ resetSelect: Function }>()
+  // 交易状态
+  const [transactionState, setTransactionState] = useState({
+    inProgress: false,
+    msg: '',
+  })
+  // 提示状态
+  const [snackbarState, setSnackbarState] = useState<{ open: boolean; alertColor: AlertColor; alertMsg: string }>({
+    open: false,
+    alertColor: 'info',
+    alertMsg: '',
+  })
   // const [open,setOpen] = useState(false)
+
   const { account, signer, contract } = useWeb3Context()
   const navigate = useNavigate()
 
   const owner = info?.owner?.address
   const showBelongToMe = owner.toUpperCase() === account.toUpperCase()
-  const showViewOnly = info.hasCopied
+  const showViewOnly = info.hasCopied && !showBelongToMe
   const showCopy = !showBelongToMe && !showViewOnly
 
   function reloadWindow() {
@@ -37,23 +82,20 @@ const NFTHandler: React.FC<Props> = (props: Props) => {
   }
   // 执行销毁 让出坑位
   const onBurn = async () => {
-    try {
+    transactionPublic(async () => {
       const contractWithSigner = contract.connect(signer)
 
       const tx = await contractWithSigner.refund(
         info.token_id, // copy NFT的 tokenid
       )
       const response = await tx.wait()
-      // console.log(response, 'response')
       navigate(`/`)
-    } catch (err) {
-      console.log(err, 'err')
-    }
+    }, TransctionType.BURN)
   }
 
   // copy 并注入至少 0.1 eth
-  const onCopyWithInject = async (token:Token) => {
-    try {
+  const onCopyWithInject = async (token: Token) => {
+    transactionPublic(async () => {
       const contractWithSigner = contract.connect(signer)
       const address = await signer.getAddress()
       const value = ethers.utils.parseEther(token.volume || '0.1')
@@ -69,20 +111,41 @@ const NFTHandler: React.FC<Props> = (props: Props) => {
       const response = await tx.wait()
 
       // 获取 copy 后的 token id 用以跳转新的链接
-      const bytes32 = getBytes32(info.asset_contract.address,info.token_id)
+      const bytes32 = getBytes32(info.asset_contract.address, info.token_id)
       const hexId = await contract._uniques(bytes32)
-      const tokenId = formatBigNumber(hexId,0,0)
+      const tokenId = formatBigNumber(hexId, 0, 0)
 
-      const { to:contractAddress } = response
+      const { to: contractAddress } = response
       navigate(`/info/${contractAddress}/${tokenId}`)
       reloadWindow()
-
-      //TODO 成功/失败提示的 ui 可以用一个统一的
-
-    } catch (err) {
-      console.log(err, 'err')
-    }
+    }, TransctionType.INJECT)
   }
+
+  /**
+   * @description: 合约交易的通用处理逻辑, 包括交易前置条件处理, 交易结果状态提示，及交易后置操作
+   * @param {*} fn 交易执行过程的异步函数
+   * @param {*} type 交易的类型
+   * @return {*}
+   */
+  const transactionPublic = useCallback(async (fn: Function, type: TransctionType) => {
+    // if (!showBelongToMe || !showCopy) return
+    setTransactionState({ inProgress: true, msg: transactionMsg[type].inProgress })
+    try {
+      await fn()
+      setSnackbarState({ open: true, alertColor: 'success', alertMsg: transactionMsg[type].successful })
+      // refreshInject()
+    } catch (error) {
+      // 可以用来显示错误
+      if ((error as any).code === 4001) {
+        // 用户取消交易
+        setSnackbarState({ open: true, alertColor: 'warning', alertMsg: transactionMsg[type].cancel })
+      } else {
+        setSnackbarState({ open: true, alertColor: 'error', alertMsg: transactionMsg[type].failed })
+      }
+    } finally {
+      setTransactionState({ ...transactionState, inProgress: false })
+    }
+  }, [])
 
   return (
     (!account && <div>Connect wallet first</div>) || (
@@ -108,6 +171,26 @@ const NFTHandler: React.FC<Props> = (props: Props) => {
           )}
           {showBelongToMe && <NftInject withCopyInit={false} onBurn={onBurn} ref={injectRef}></NftInject>}
           {showCopy && <NftInject withCopyInit={true} onCopyWithInject={onCopyWithInject}></NftInject>}
+          <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={transactionState.inProgress}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <CircularProgress color="inherit" />
+              <div style={{ marginTop: '20px' }}>{transactionState.msg}</div>
+            </div>
+          </Backdrop>
+          {/* 交易结束后提示交易结果 */}
+          <Snackbar
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            open={snackbarState.open}
+            autoHideDuration={6500}
+            onClose={() => setSnackbarState((v) => ({ ...v, open: false }))}
+          >
+            <Alert severity={snackbarState.alertColor} className="alert-msg">
+              {snackbarState.alertMsg}
+            </Alert>
+          </Snackbar>
         </>
         {/* )} */}
       </NFTHandlerWrapper>

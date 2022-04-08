@@ -4,9 +4,9 @@ import log from 'loglevel'
 
 import { RootState } from '../../store/store'
 import { loadExploreNFT } from '../explore/exploreData'
+import { contractAddress } from '../../utils'
 
 import { Contract, NFT } from '../../synft'
-
 
 type Token = {
   mint: PublicKey
@@ -32,8 +32,13 @@ const initialState: MyNFT = {
 }
 
 export const getMyNFTData = createAsyncThunk('my/nftdata', async ({ owner }: { owner: any }, thunkAPI) => {
-  const d: NFT[] = await loadExploreNFT({owner})
-  thunkAPI.dispatch(myNFTSlice.actions.incrDataWithArr({ data: d }))
+  const d: NFT[] = await loadExploreNFT(
+    { owner, asset_contract_address: contractAddress },
+    {
+      cache: 'no-cache',
+    }
+  )
+  thunkAPI.dispatch(myNFTSlice.actions.incrDataWithArr({ data: d.map((item) => ({ ...item, hasCopied: true })) }))
   thunkAPI.dispatch(myNFTSlice.actions.changeStatus({ status: 'done' }))
   // const contract = Contract.getInstance()
   // log.info('init myNFTData with wallet.publicKey', owner.toString())

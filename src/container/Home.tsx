@@ -92,7 +92,6 @@ function Home() {
     // 滚动条滚动到顶部(为了移动端更友好些)
     backToTop()
   }, [tab])
-
   const nftList: NftDataItem[] = tab === 'my' ? myNFTData : exploreNFTData
   return (
     <HomeWrapper>

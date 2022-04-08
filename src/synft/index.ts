@@ -2,7 +2,7 @@
  * @Author: HuangBoWen
  * @Date: 2022-03-24 07:25:05
  * @LastEditors: HuangBoWen
- * @LastEditTime: 2022-04-01 23:04:44
+ * @LastEditTime: 2022-04-07 17:28:38
  * @Description: 
  */
 export { default as Contract } from './Contract'
@@ -14,7 +14,7 @@ export type GetNFTPayload = {
     offset?: number
     limit?: number
     collection?: string
-    contract?: any
+    // contract?: any
     asset_contract_address?: string
     token_ids?: string
   }
