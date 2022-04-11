@@ -4,6 +4,7 @@ import styled from 'styled-components'
 
 import { useWeb3Context } from './ConnectedWeb3'
 import ButtonConnectWallect from './common/ButtonConnectWallet'
+import InputSearch from './common/InputSearch'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
 
 export default function Header() {
@@ -17,6 +18,7 @@ export default function Header() {
       </div>
       <div className="right">
         {/* <input type="text" className="search" /> */}
+        <InputSearch/>
         <ButtonConnectWallect context={context}/>
       </div>
     </HeaderWrapper>

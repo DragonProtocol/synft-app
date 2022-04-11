@@ -20,7 +20,6 @@ import SplitTextOpacity, { SplitTextOpacityFuns } from '../components/common/ani
 import LoadingIcon from '../components/imgs/Loading.gif'
 import { MOBILE_BREAK_POINT } from '../utils/constants'
 import { backToTop } from '../utils/tools'
-import { collection } from '../utils'
 
 function Home() {
   const context = useWeb3Context()
@@ -74,13 +73,13 @@ function Home() {
   useEffect(() => {
     // TODO 分页
     if (exploreNFTStatus === 'init') {
-      const payload = {
-        order_direction: 'desc',
-        offset: 0,
-        limit: 20,
-        collection
-      }
-      dispatch(getExploreData(payload))
+      // const payload = {
+      //   order_direction: 'desc',
+      //   offset: 0,
+      //   limit: 20,
+      //   collection
+      // }
+      dispatch(getExploreData({}))
       // 分步取数据的 DEMO，collections 可与 selectExploreDataHasGetCollectionIds 做 diff
       // setTimeout(() => {
       //   dispatch(getExploreDataWithCollectionId({ collectionId: collections[1] }))
