@@ -20,7 +20,8 @@ export const network = isProd ? 'mainnet' : 'rinkeby'
 export const contractAddress = '0x6305348eed237ac2a24668e085c388e8794ece20' // eth rinkeby
 
 // explore 数据源
-export const collection = isProd ? 'azuki-god' : 'azuki-god'
+export const collection = isProd ? 'Alpha Kong #41' : 'Alpha Kong #41'
+// export const collection = isProd ? 'azuki-god' : 'azuki-god'
 
 export function lamportsToSol(lamportsAmount: number) {
   return lamportsAmount / LAMPORTS_PER_SOL

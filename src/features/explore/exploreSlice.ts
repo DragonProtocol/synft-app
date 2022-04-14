@@ -89,7 +89,9 @@ export const exploreSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getExploreData.pending, (state) => {
-        if (state.status === 'init') state.status = 'loading'
+        state.status = 'loading'
+        state.data = []
+        // if (state.status === 'init') state.status = 'loading'
       })
       .addCase(getExploreData.fulfilled, (state, action) => {
         state.status = 'done'

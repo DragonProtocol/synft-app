@@ -12,28 +12,49 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { TextField, InputAdornment } from '@mui/material'
 import debounce from 'lodash/debounce'
 import Search from '@mui/icons-material/Search'
+import { Alert, AlertColor, Backdrop, CircularProgress, Snackbar } from '@mui/material'
 
-import { getExploreData } from '../../features/explore/exploreSlice'
+import { getExploreData, selectExploreStatus } from '../../features/explore/exploreSlice'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 
 interface props {}
 
 const InputSearch: React.FC<props> = () => {
-  const [value, setValue] = useState<string>(new URLSearchParams(window.location.hash.replace('#/',''))?.get("q") || '')
+  const [value, setValue] = useState<string>(
+    new URLSearchParams(window.location.hash.replace('#/', ''))?.get('q') || '',
+  )
+  // 提示状态
+  const [snackbarState, setSnackbarState] = useState<{ open: boolean; alertColor: AlertColor; alertMsg: string }>({
+    open: false,
+    alertColor: 'info',
+    alertMsg: '',
+  })
+  const exploreNFTStatus = useAppSelector(selectExploreStatus)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
-  const onSearch = (value:string) => {
-    // console.log(value,' ----------------------------- navigate value -----------------------')
-
-    navigate(`/?q=${value}`)
-    dispatch(getExploreData({}))
+  const onSearch = (value: string) => {
+    // console.log(value, ' ----------------------------- navigate value -----------------------')
+    if (value.length !== 0 && value.length < 3) {
+      setSnackbarState({
+        open: true,
+        alertColor: 'warning',
+        alertMsg: 'query must have a minimum length of 3 characters',
+      })
+      return
+    }
+      navigate(`/?q=${value}`)
+      dispatch(getExploreData({}))
   }
-  const debouncedSearch = useCallback(debounce((value)=>onSearch(value), 1000), [])
+
+  const debouncedSearch = useCallback(
+    debounce((value) => onSearch(value), 1000),
+    [],
+  )
 
   useEffect(() => {
     debouncedSearch(value)
-  },[value])
+  }, [value])
 
   return (
     <Wrapper>
@@ -52,6 +73,16 @@ const InputSearch: React.FC<props> = () => {
         value={value}
         onChange={(e) => setValue(e?.target?.value)}
       />
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        open={snackbarState.open}
+        autoHideDuration={6500}
+        onClose={() => setSnackbarState((v) => ({ ...v, open: false }))}
+      >
+        <Alert severity={snackbarState.alertColor} className="alert-msg">
+          {snackbarState.alertMsg}
+        </Alert>
+      </Snackbar>
     </Wrapper>
   )
 }

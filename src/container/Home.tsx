@@ -65,9 +65,9 @@ function Home() {
   useEffect(() => {
     if (!account) {
       dispatch(clearMyNFT())
-      return
+      // return
     }
-    dispatch(getMyNFTData({ owner: account }))
+    // dispatch(getMyNFTData({ owner: account }))
   }, [account])
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function Home() {
       //   limit: 20,
       //   collection
       // }
-      dispatch(getExploreData({}))
+      // dispatch(getExploreData({}))
       // 分步取数据的 DEMO，collections 可与 selectExploreDataHasGetCollectionIds 做 diff
       // setTimeout(() => {
       //   dispatch(getExploreDataWithCollectionId({ collectionId: collections[1] }))
