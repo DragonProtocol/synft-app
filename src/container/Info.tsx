@@ -1,7 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
-// import ReactJson from 'react-json-view'
 
 import NFTHandler from '../components/NFTHandler'
 

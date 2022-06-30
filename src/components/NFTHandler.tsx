@@ -5,7 +5,6 @@ import { PublicKey, Transaction } from '@solana/web3.js'
 import { useNavigate } from 'react-router-dom'
 import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 import { Alert, AlertColor, Backdrop, CircularProgress, Snackbar } from '@mui/material'
-// import ReactJson from 'react-json-view'
 
 import { getMyNFTokens, selectMyNFTData, selectMyNFTDataStatus } from '../features/my/mySlice'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
